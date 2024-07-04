@@ -1,0 +1,299 @@
+<html><head><base href="https://tetris.retro">
+<title>Tetris Classic | The Original Blockbuster</title>
+<style>
+  body {
+    font-family: 'Courier New', monospace;
+    background-color: #000;
+    color: #0f0;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+    overflow: hidden;
+  }
+  #game-container {
+    display: inline-block;
+    border: 2px solid #0f0;
+    padding: 10px;
+    position: relative;
+  }
+  #game-board {
+    width: 200px;
+    height: 400px;
+    border: 1px solid #0f0;
+    position: relative;
+    display: inline-block;
+  }
+  #next-piece {
+    width: 80px;
+    height: 80px;
+    border: 1px solid #0f0;
+    position: absolute;
+    top: 10px;
+    right: -100px;
+    background-color: #000;
+  }
+  .tetromino {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    box-sizing: border-box;
+    border: 1px solid #000;
+  }
+  #score {
+    font-size: 24px;
+    margin-top: 20px;
+  }
+  #controls {
+    margin-top: 20px;
+    font-size: 14px;
+  }
+  .blink {
+    animation: blink-animation 1s steps(5, start) infinite;
+  }
+  @keyframes blink-animation {
+    to {
+      visibility: hidden;
+    }
+  }
+  a {
+    color: #0f0;
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+</style>
+</head>
+<body>
+<h1>Tetris Classic</h1>
+<div id="game-container">
+  <div id="game-board"></div>
+  <div id="next-piece"></div>
+</div>
+<div id="score">Score: <span id="score-value">0</span></div>
+<div id="controls">
+  <p>← → : Move | ↑ : Rotate | ↓ : Drop | Space : Instant Drop</p>
+</div>
+<p class="blink">Press any key to start</p>
+<p><a href="https://tetris.retro/leaderboard">Leaderboard</a> | <a href="https://tetris.retro/history">History of Tetris</a></p>
+<p><a href="https://www.youtube.com/watch?v=NmCCQxVBfyM" target="_blank">Sound</a></p>
+
+<script>
+const board = document.getElementById('game-board');
+const nextPieceDisplay = document.getElementById('next-piece');
+const scoreElement = document.getElementById('score-value');
+let score = 0;
+let gameInterval;
+let currentPiece;
+let nextPiece;
+let gameBoard = Array(20).fill().map(() => Array(10).fill(0));
+
+const tetrominoes = [
+  [[1,1,1,1]],
+  [[1,1],[1,1]],
+  [[1,1,1],[0,1,0]],
+  [[1,1,1],[1,0,0]],
+  [[1,1,1],[0,0,1]],
+  [[1,1,0],[0,1,1]],
+  [[0,1,1],[1,1,0]]
+];
+
+const colors = ['#00f0f0', '#f0f000', '#a000f0', '#f0a000', '#0000f0', '#00f000', '#f00000'];
+
+function createPiece() {
+  const type = Math.floor(Math.random() * tetrominoes.length);
+  return {
+    type: type,
+    shape: tetrominoes[type],
+    color: colors[type],
+    x: 3,
+    y: 0
+  };
+}
+
+function drawPiece(piece, target) {
+  piece.shape.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value) {
+        const block = document.createElement('div');
+        block.classList.add('tetromino');
+        block.style.backgroundColor = piece.color;
+        if (target === board) {
+          block.style.left = (piece.x + x) * 20 + 'px';
+          block.style.top = (piece.y + y) * 20 + 'px';
+          block.setAttribute('data-x', piece.x + x);
+          block.setAttribute('data-y', piece.y + y);
+        } else {
+          block.style.left = x * 20 + 'px';
+          block.style.top = y * 20 + 'px';
+        }
+        target.appendChild(block);
+      }
+    });
+  });
+}
+
+function updateNextPieceDisplay() {
+  nextPieceDisplay.innerHTML = '';
+  drawPiece(nextPiece, nextPieceDisplay);
+}
+
+function movePiece(dx, dy) {
+  erasePiece();
+  currentPiece.x += dx;
+  currentPiece.y += dy;
+  if (collision()) {
+    currentPiece.x -= dx;
+    currentPiece.y -= dy;
+    if (dy > 0) {
+      mergePiece();
+      removeRows();
+      currentPiece = nextPiece;
+      nextPiece = createPiece();
+      updateNextPieceDisplay();
+      if (collision()) {
+        gameOver();
+      }
+    }
+  }
+  drawPiece(currentPiece, board);
+}
+
+function rotatePiece() {
+  erasePiece();
+  const rotated = currentPiece.shape[0].map((val, index) => 
+    currentPiece.shape.map(row => row[index]).reverse()
+  );
+  const previousShape = currentPiece.shape;
+  currentPiece.shape = rotated;
+  if (collision()) {
+    currentPiece.shape = previousShape;
+  }
+  drawPiece(currentPiece, board);
+}
+
+function erasePiece() {
+  currentPiece.shape.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value) {
+        const block = document.querySelector(`.tetromino[data-x="${currentPiece.x + x}"][data-y="${currentPiece.y + y}"]`);
+        if (block) {
+          board.removeChild(block);
+        }
+      }
+    });
+  });
+}
+
+function collision() {
+  return currentPiece.shape.some((row, dy) =>
+    row.some((value, dx) => {
+      if (value) {
+        const newX = currentPiece.x + dx;
+        const newY = currentPiece.y + dy;
+        return newX < 0 || newX >= 10 || newY >= 20 || (newY >= 0 && gameBoard[newY][newX]);
+      }
+      return false;
+    })
+  );
+}
+
+function mergePiece() {
+  currentPiece.shape.forEach((row, y) => {
+    row.forEach((value, x) => {
+      if (value) {
+        gameBoard[currentPiece.y + y][currentPiece.x + x] = currentPiece.color;
+      }
+    });
+  });
+  redrawBoard();
+}
+
+function removeRows() {
+  let rowsCleared = 0;
+  for (let y = 19; y >= 0; y--) {
+    if (gameBoard[y].every(cell => cell !== 0)) {
+      gameBoard.splice(y, 1);
+      gameBoard.unshift(Array(10).fill(0));
+      rowsCleared++;
+      y++;
+    }
+  }
+  if (rowsCleared > 0) {
+    score += [40, 100, 300, 1200][rowsCleared - 1];
+    scoreElement.textContent = score;
+    redrawBoard();
+  }
+}
+
+function redrawBoard() {
+  // Remove all existing blocks
+  const blocks = document.querySelectorAll('#game-board .tetromino');
+  blocks.forEach(block => board.removeChild(block));
+
+  // Redraw the landed pieces
+  gameBoard.forEach((row, y) => {
+    row.forEach((color, x) => {
+      if (color) {
+        const block = document.createElement('div');
+        block.classList.add('tetromino');
+        block.style.backgroundColor = color;
+        block.style.left = x * 20 + 'px';
+        block.style.top = y * 20 + 'px';
+        block.setAttribute('data-x', x);
+        block.setAttribute('data-y', y);
+        board.appendChild(block);
+      }
+    });
+  });
+
+  // Redraw the current piece
+  if (currentPiece) {
+    drawPiece(currentPiece, board);
+  }
+}
+
+function gameOver() {
+  clearInterval(gameInterval);
+  alert('Game Over! Your score: ' + score);
+}
+
+function startGame() {
+  gameBoard = Array(20).fill().map(() => Array(10).fill(0));
+  score = 0;
+  scoreElement.textContent = score;
+  currentPiece = createPiece();
+  nextPiece = createPiece();
+  updateNextPieceDisplay();
+  gameInterval = setInterval(() => movePiece(0, 1), 500);
+}
+
+document.addEventListener('keydown', event => {
+  if (!gameInterval) {
+    startGame();
+    return;
+  }
+  switch (event.keyCode) {
+    case 37: movePiece(-1, 0); break;
+    case 39: movePiece(1, 0); break;
+    case 40: movePiece(0, 1); break;
+    case 38: rotatePiece(); break;
+    case 32:
+      while (!collision()) {
+        erasePiece();
+        currentPiece.y++;
+      }
+      currentPiece.y--;
+      drawPiece(currentPiece, board);
+      mergePiece();
+      removeRows();
+      currentPiece = nextPiece;
+      nextPiece = createPiece();
+      updateNextPieceDisplay();
+      if (collision()) gameOver();
+      break;
+  }
+});
+</script>
+
+</body></html>
