@@ -1,0 +1,371 @@
+<html><head><base href="localhost" />
+<title>Cosmic Calm - Mindfulness Stress Relief</title>
+<style>
+  body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Arial, sans-serif;
+    background-color: #000;
+    color: #fff;
+    overflow: hidden;
+  }
+  .content {
+    position: fixed;
+    left: -25%;
+    top: 0;
+    width: 25%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    overflow-y: auto;
+    transition: left 0.3s ease-out;
+    z-index: 10;
+  }
+  .content:hover, .content.active {
+    left: 0;
+  }
+  .image-panel {
+    position: fixed;
+    right: -25%;
+    top: 0;
+    width: 25%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    transition: right 0.3s ease-out;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .image-panel:hover, .image-panel.active {
+    right: 0;
+  }
+  h1 {
+    text-align: center;
+    color: #8e44ad;
+  }
+  .meditation-technique {
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: rgba(142, 68, 173, 0.2);
+    border-radius: 5px;
+  }
+  .interactive-element {
+    cursor: pointer;
+    padding: 10px;
+    background-color: #8e44ad;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    margin: 10px 0;
+  }
+  #breath-guide {
+    width: 100px;
+    height: 100px;
+    background-color: #8e44ad;
+    border-radius: 50%;
+    margin: 20px auto;
+    animation: breathe 8s infinite ease-in-out;
+  }
+  @keyframes breathe {
+    0%, 100% { transform: scale(0.5); }
+    50% { transform: scale(1); }
+  }
+  #ambient-sound {
+    text-align: center;
+    margin-top: 20px;
+  }
+  #starfield-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+  #starfield {
+    width: 100%;
+    height: 100%;
+  }
+  .image-panel img {
+    max-width: 90%;
+    max-height: 60%;
+    object-fit: cover;
+  }
+  .controls {
+    margin-top: 20px;
+    text-align: center;
+  }
+  .slider-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  .slider-container label {
+    margin-right: 10px;
+  }
+  .toggle-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .toggle-container label {
+    margin-right: 10px;
+  }
+  .drawer-icon {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 30px;
+    height: 60px;
+    background-color: rgba(142, 68, 173, 0.5);
+    border-radius: 0 30px 30px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 11;
+    transition: opacity 0.3s ease-out;
+  }
+  .drawer-icon::after {
+    content: '';
+    width: 0;
+    height: 0;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+  }
+  .drawer-icon.left {
+    left: 0;
+  }
+  .drawer-icon.right {
+    right: 0;
+    border-radius: 30px 0 0 30px;
+  }
+  .drawer-icon.left::after {
+    border-left: 15px solid transparent;
+    border-right: 15px solid white;
+  }
+  .drawer-icon.right::after {
+    border-left: 15px solid white;
+    border-right: 15px solid transparent;
+  }
+  .content:hover + .drawer-icon.left,
+  .image-panel:hover + .drawer-icon.right,
+  .content.active + .drawer-icon.left,
+  .image-panel.active + .drawer-icon.right {
+    opacity: 0;
+  }
+</style>
+</head>
+<body>
+  <div class="content">
+    <h1>Cosmic Calm: Mindfulness Stress Relief</h1>
+    
+    <div class="meditation-technique">
+      <h2>Cosmic Breath Meditation</h2>
+      <p>Focus on your breath as you imagine yourself floating through the vast expanse of the universe. With each inhale, visualize drawing in the calm energy of the cosmos. With each exhale, release any tension or stress.</p>
+      <div id="breath-guide"></div>
+      <p>Follow the expanding and contracting circle to guide your breath.</p>
+    </div>
+    
+    <div class="meditation-technique">
+      <h2>Starlight Body Scan</h2>
+      <p>Starting from your toes, imagine a warm, soothing starlight slowly moving up through your body. As it passes through each part, feel that area relax and release any tension. Continue until the light reaches the top of your head, leaving you feeling completely relaxed and at peace.</p>
+    </div>
+    
+    <div class="meditation-technique">
+      <h2>Nebula Visualization</h2>
+      <p>Picture yourself floating near a beautiful, colorful nebula. As you observe its swirling patterns and vibrant colors, let go of your thoughts and simply be present in this moment of cosmic wonder. If your mind wanders, gently bring your attention back to the mesmerizing nebula.</p>
+    </div>
+    
+    <button class="interactive-element" onclick="toggleAmbientSound()">Toggle Ambient Space Sounds</button>
+    
+    <div id="ambient-sound">
+      <audio id="space-ambient" loop>
+        <source src="./space-ambient.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+      </audio>
+    </div>
+  </div>
+  <div class="drawer-icon left"></div>
+
+  <div id="starfield-panel">
+    <canvas id="starfield"></canvas>
+  </div>
+
+  <div class="image-panel">
+    <img src="./milky-way-forest.jpg" alt="Milky Way visible over a silhouette of pine trees at night, showing a vibrant purple and blue starry sky" width="800" height="533">
+    <div class="controls">
+      <div class="slider-container">
+        <label for="speed-slider">Star Speed:</label>
+        <input type="range" id="speed-slider" min="0" max="100" value="50">
+      </div>
+      <div class="toggle-container">
+        <label for="color-toggle">Colored Stars:</label>
+        <input type="checkbox" id="color-toggle" checked>
+      </div>
+    </div>
+  </div>
+  <div class="drawer-icon right"></div>
+
+  <script>
+    // Ambient sound toggle
+    function toggleAmbientSound() {
+      const audio = document.getElementById('space-ambient');
+      if (audio.paused) {
+        audio.play();
+      } else {
+        audio.pause();
+      }
+    }
+
+    // Starfield animation
+    var canvas = document.getElementById("starfield");
+    var speedSlider = document.getElementById("speed-slider");
+    var colorToggle = document.getElementById("color-toggle");
+
+    // get dimensions of starfield-panel
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+
+    // detect device pixel ratio
+    if (window.devicePixelRatio) {
+        var dpr = window.devicePixelRatio;
+
+        // set dimensions of the canvas element to match the starfield-panel
+        canvas.style.width = w + "px";
+        canvas.style.height = h + "px";
+
+        // adjust width and height variables according to the detected pixel ratio
+        w = w * dpr;
+        h = h * dpr;
+    }
+
+    // set drawing dimensions of canvas
+    canvas.setAttribute("width", w);
+    canvas.setAttribute("height", h);
+
+    // prepare a two-dimensional drawing context
+    var c = canvas.getContext("2d");
+
+    // randomness generator
+    rand = function() { return (Math.random() - 0.5) * (Math.random() - 0.5) * Math.random() };
+
+    // compute center
+    var cx = w / 2;
+    var cy = h / 2;
+
+    // Star colors
+    var starColors = [
+        '#FFFFFF', // White
+        '#FFD700', // Gold
+        '#87CEEB', // Sky Blue
+        '#FF69B4', // Hot Pink
+        '#00FF00', // Lime Green
+        '#FF4500', // Orange Red
+        '#9370DB'  // Medium Purple
+    ];
+
+    // randomly generate stars around center
+    var count = 170;
+    var stars = [];
+    for (var i = 0; i < count; i++) {
+        var sx = cx + rand() * w;
+        var sy = cy + rand() * h;
+        var color = starColors[Math.floor(Math.random() * starColors.length)];
+        var s = [sx, sy, color];
+        stars.push(s);
+    }
+
+    // main loop
+    var fps = 30;
+    function updateStars() {
+        c.clearRect(0, 0, w, h);
+
+        var speed = speedSlider.value / 5000; // Adjust this divisor to fine-tune speed range
+        var useColor = colorToggle.checked;
+
+        // iterate over stars
+        for (var i = 0; i < stars.length; i++) {
+            var x = stars[i][0];
+            var y = stars[i][1];
+            var color = useColor ? stars[i][2] : '#FFFFFF';
+
+            // compute radius depending on euclidean distance from center
+            var r = 0.005 * (Math.sqrt(Math.pow(x - cx, 2) + Math.pow(y - cy, 2)));
+
+            // draw star
+            c.beginPath();
+            c.arc(x, y, r, 0, 2 * Math.PI, false);
+            c.fillStyle = color;
+            c.fill();
+
+            // update star
+            var nx = x + (x - cx) * speed;
+            var ny = y + (y - cy) * speed;
+            stars[i] = [nx, ny, stars[i][2]];
+
+            // reset star if out of bounds
+            if (x < -100 || x > w + 100 || y < -100 || y > h + 100) {
+                x = cx + rand() * w/10;
+                y = cy + rand() * w/10;
+                color = starColors[Math.floor(Math.random() * starColors.length)];
+                stars[i] = [x, y, color];
+            }
+        }
+        requestAnimationFrame(updateStars);
+    }
+
+    updateStars();
+
+    // Resize handler
+    window.addEventListener('resize', function() {
+        w = window.innerWidth;
+        h = window.innerHeight;
+
+        if (window.devicePixelRatio) {
+            var dpr = window.devicePixelRatio;
+            canvas.style.width = w + "px";
+            canvas.style.height = h + "px";
+            w = w * dpr;
+            h = h * dpr;
+        }
+
+        canvas.setAttribute("width", w);
+        canvas.setAttribute("height", h);
+
+        cx = w / 2;
+        cy = h / 2;
+
+        // Reset stars
+        stars = [];
+        for (var i = 0; i < count; i++) {
+            var sx = cx + rand() * w;
+            var sy = cy + rand() * h;
+            var color = starColors[Math.floor(Math.random() * starColors.length)];
+            var s = [sx, sy, color];
+            stars.push(s);
+        }
+    });
+
+    // Panel sliding functionality
+    document.addEventListener('mousemove', function(e) {
+        var contentPanel = document.querySelector('.content');
+        var imagePanel = document.querySelector('.image-panel');
+        
+        if (e.clientX < 50) {
+            contentPanel.classList.add('active');
+        } else {
+            contentPanel.classList.remove('active');
+        }
+        
+        if (e.clientX > window.innerWidth - 50) {
+            imagePanel.classList.add('active');
+        } else {
+            imagePanel.classList.remove('active');
+        }
+    });
+  </script>
+</body></html>
